@@ -1,0 +1,14 @@
+{
+  "include": ["src","src/**/*.d.ts"],
+  "compilerOptions": {
+    "jsx": "react-jsx",   // or "react" for older React versions
+    "allowJs": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "strict": false
+  }
+}
