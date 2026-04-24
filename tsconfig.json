@@ -1,14 +1,16 @@
 {
-  "include": ["src","src/**/*.d.ts"],
+  "include": ["src", "src/**/*.d.ts", "globals.d.ts"],
   "compilerOptions": {
-    "jsx": "react-jsx",   // or "react" for older React versions
-    "allowJs": true,
+    "target": "ES2020",
     "module": "esnext",
     "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "allowJs": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "skipLibCheck": true,
-    "strict": false
+    "strict": false,
+    "ignoreDeprecations": "6.0"
   }
 }
