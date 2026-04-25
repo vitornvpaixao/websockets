@@ -23,7 +23,7 @@ function useDraggable(){
         target.style.transform = `translate(${x}px, ${y}px)`
     }
 
-    const endDragging = (e: React.PointerEvent<HTMLDivElement>): void => {
+    const endDragging = (): void => {
         setDrag(false);
     }
 
