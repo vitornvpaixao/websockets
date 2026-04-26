@@ -1,30 +1,36 @@
 import { useState } from "react";
 
+interface dragState {
+    isDragging: boolean;
+    offSetX: number;
+    offSetY: number;
+}
+
 function useDraggable(){
-    const [drag, setDrag] = useState(false);
-    const [offSetX, setOffSetX] = useState(0);
-    const [offSetY, setOffSetY] = useState(0);
+    const [dragState, setDragState] = useState<dragState>({isDragging: false, offSetX: 0, offSetY: 0});
 
     const beginDrag = (e: React.PointerEvent<HTMLDivElement>): void => {
-        const target = e.target as HTMLElement;
+        const target = e.currentTarget as HTMLElement;
 
-        setDrag(true);
-        setOffSetX(e.clientX - target.getBoundingClientRect().left);
-        setOffSetY(e.clientY - target.getBoundingClientRect().top);
+        setDragState({
+            isDragging: true,
+            offSetX: e.clientX - target.getBoundingClientRect().left,
+            offSetY: e.clientY - target.getBoundingClientRect().top
+        })
         target.setPointerCapture(e.pointerId);
     }
 
     const dragging = (e: React.PointerEvent<HTMLDivElement>): void => {
-        if (!drag) return;
-        const target = e.target as HTMLElement;
-        const x = e.clientX - offSetX;
-        const y = e.clientY - offSetY;
+        if (!dragState.isDragging) return;
+        const target = e.currentTarget as HTMLElement;
+        const x = e.clientX - dragState.offSetX;
+        const y = e.clientY - dragState.offSetY;
 
         target.style.transform = `translate(${x}px, ${y}px)`
     }
 
     const endDragging = (): void => {
-        setDrag(false);
+        setDragState(prev => ({...prev, isDragging: false}));
     }
 
     return { beginDrag, dragging, endDragging }
