@@ -3,4 +3,3 @@ export interface movedObject {
     x: number;
     y: number;
 }
- 
