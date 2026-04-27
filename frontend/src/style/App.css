@@ -1,6 +1,6 @@
 .red-rectangle {
-  background-color: red;
   position: absolute;
+  background-color: green;
   height: 50px;
   width: 50px;
   will-change: transform;
