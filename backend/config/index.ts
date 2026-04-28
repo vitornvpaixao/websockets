@@ -6,7 +6,7 @@ interface Config {
     HOST: string
 }
 
-const env = 'dev';
+const env = 'local';
 const envPath = path.resolve(process.cwd(), "config", `.env.${env}`);
 dotenv.config({ path: envPath });
 
