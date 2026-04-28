@@ -4,15 +4,18 @@ import { config } from '../config';
 const { PORT, HOST } = config;
 const wss = new WebSocketServer({ port: PORT });
 
-wss.on('connection', function connection(ws) {
+wss.on('connection', (ws) => {
   ws.on('error', console.error);
 
-  ws.on('message', function message(data, isBinary) {
-    console.log('received: %s', data);
+  ws.on('message', (data, isBinary) => {
+    console.log(`[${new Date().toISOString()}] received: ${data}`);
 
     wss.clients.forEach(cli => {
         if (cli !== ws && cli.readyState == WebSocket.OPEN) {
-            cli.send(data, {binary: isBinary});
+          cli.send(data, {binary: isBinary}, (err) => {
+              if (err) console.error('WS send error: ', err);
+            }
+          );
         }
     })
   });
