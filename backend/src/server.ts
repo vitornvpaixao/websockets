@@ -10,7 +10,7 @@ wss.on('connection', function connection(ws) {
     console.log('received: %s', data);
 
     wss.clients.forEach(cli => {
-        if (cli !== ws) {
+        if (cli !== ws && cli.readyState == WebSocket.OPEN) {
             cli.send(data, {binary: isBinary});
         }
     })
