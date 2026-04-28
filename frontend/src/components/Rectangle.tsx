@@ -2,22 +2,22 @@ import { useRef } from "react";
 import useDraggable from "../hooks/useDraggable";
 
 export default function Rectangle(props: any) {
-  const elementRef = useRef(null);
-  const { beginDrag, dragging, endDragging, applyPosition } = useDraggable(elementRef, props.id, props.onPositionChange);
-
+  const translate = useRef<string | undefined>(undefined);
+  const { beginDrag, dragging, endDragging } = useDraggable(props.id, props.onPositionChange);
+  
   // To improve - apply position received from ws
-  if (props.newPosition.isActive) {
-    applyPosition(props.newPosition.x, props.newPosition.y);
+  if (props.newPosition.isActive && props.newPosition.id === props.id) {
+    translate.current = `translate(${props.newPosition.x}px, ${props.newPosition.y}px)`;
   }
 
   return (
       <div
-        ref={elementRef}
         id={props.id}
         className={props.className}
         onPointerDown={beginDrag}
         onPointerMove={dragging}
         onPointerUp={endDragging}
+        style= {{ transform: translate.current }}
       />
   )
 }
