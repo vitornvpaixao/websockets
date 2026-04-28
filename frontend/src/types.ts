@@ -1,5 +1,5 @@
 export interface movedObject {
-    id: number | string;
+    id: string;
     x: number;
     y: number;
 }
