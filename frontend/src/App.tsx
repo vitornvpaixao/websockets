@@ -14,7 +14,7 @@ function App() {
   const [ position, setPosition ] = useState<elementPosition>({id: '', isActive: false, x: 0, y: 0});
   const [ isConnected, setIsConnected ] = useState<boolean>(false);
   const throttleRef = useRef<number | null>(null);
-  const webSocketRef = useRef<WebSocket>(null);
+  const webSocketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     let cleanUp: (() => void) | null = null;
@@ -31,6 +31,9 @@ function App() {
       };
 
       const handleClose = () => {
+        setIsConnected(false);
+        removeListeners();
+
         if (attempt < maxRetries) {
           console.log('WebSocket Closed')
           console.log(`Retry Connect WebSocket in ${delay}ms`)
@@ -52,18 +55,21 @@ function App() {
         console.error('WebSocket error: ', err);
         setIsConnected(false);
       };
-      
-      socket.addEventListener('open', handleOpen);
-      socket.addEventListener('message', handleMessage);
-      socket.addEventListener('error', handleError);
-      socket.addEventListener('close', handleClose)
 
-      cleanUp = () => {
+      const removeListeners = () => {
         socket.removeEventListener('message', handleMessage);
         socket.removeEventListener('error', handleError);
         socket.removeEventListener('open', handleOpen);
         socket.removeEventListener('close', handleClose);
+      }
 
+      socket.addEventListener('open', handleOpen);
+      socket.addEventListener('message', handleMessage);
+      socket.addEventListener('error', handleError);
+      socket.addEventListener('close', handleClose);
+      
+      cleanUp = () => {
+        removeListeners();
         socket.close();
       }
     }
@@ -71,6 +77,7 @@ function App() {
     connectWithRetry();
     
     return () => {
+      // At this point, cleanUp its already done and it looks redundant (only unmount component if browser close)
       cleanUp?.();
     };
   }, []);
