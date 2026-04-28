@@ -1,7 +1,29 @@
-.red-rectangle {
+.green-rectangle {
   position: absolute;
   background-color: green;
   height: 50px;
   width: 50px;
   will-change: transform;
+}
+
+.red-rectangle {
+  position: absolute;
+  background-color: red;
+  height: 50px;
+  width: 50px;
+  will-change: transform;
+}
+
+.blue-rectangle {
+  position: absolute;
+  background-color: blue;
+  height: 50px;
+  width: 50px;
+  will-change: transform;
+}
+
+button {
+  position: fixed;
+  right: 10px;
+  top: 10px;
 }
