@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws';
+import { config } from '../config';
 
-const PORT = 8080;
+const { PORT, HOST } = config;
 const wss = new WebSocketServer({ port: PORT });
 
 wss.on('connection', function connection(ws) {
@@ -17,4 +18,4 @@ wss.on('connection', function connection(ws) {
   });
 });
 
-console.log(`Server is running in: ws://localhost:${PORT}`);
+console.log(`Server running at: ws://${HOST}:${PORT}`);
