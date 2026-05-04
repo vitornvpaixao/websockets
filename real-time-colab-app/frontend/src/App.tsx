@@ -77,7 +77,6 @@ function App() {
     connectWithRetry();
     
     return () => {
-      // At this point, cleanUp its already done and it looks redundant (only unmount component if browser close)
       cleanUp?.();
     };
   }, []);
