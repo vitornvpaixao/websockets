@@ -31,6 +31,39 @@ interface Message {
     text: string;
 }
 
+class User {
+    constructor(userId: string, name: string) {
+        this.id = userId;
+        this.name = name;
+        this.connectAt = new Date();
+        this.isConnected = false;
+        this.conversations = [];
+    }
+
+    connectUser(isConnected: boolean) {
+        this.isConnected = isConnected;
+    }
+
+    addNewConversation(toUserId: string,) {
+        const conversation: Conversation = {
+            userId: toUserId,
+            messages: []
+        }
+
+        this.conversations.push(conversation);
+    }
+
+    addMessage(userId: string, type: string, text: string) {
+        const msg: Message = {
+            type,
+            date: new Date(),
+            text
+        }
+
+        this.conversations.find(c => c.userId === userId)?.messages.push(msg);
+    }
+}
+
 // improve the logs for each needed section. We must have a way to control users logged, when and who!
 wss.on('connection', (ws: WebSocket) => {
     
