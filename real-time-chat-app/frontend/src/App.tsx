@@ -3,38 +3,41 @@ import { useEffect } from 'react'
 import './style/App.css'
 
 function App() {
-    useEffect(() => {
-        let cleanUp: (() => void) | null = null;
-
-        const connect = () => {
-        const socket = new WebSocket('ws://localhost:8080');
+    const [ isConnected, setIsConnected ] = useState<boolean>(false);
+    function connectUser() {
+        let UUID = sessionStorage.getItem('userId');
     
-        const handleOpen = () => {
-            console.log('WebSocket connected');
-    
-            let UUID = sessionStorage.getItem('userId');
-    
-            if (!UUID) {
-                UUID = crypto.randomUUID();
-                console.log('criou id');
-            } else {
-                console.log('já tinha id');
-            }
-    
-            socket.send(JSON.stringify({
-                type: 'identify',
-                userId: UUID,
-            }));
-    
-            sessionStorage.setItem('userId', UUID);
-            console.log(UUID);
+        if (!UUID) {
+            UUID = crypto.randomUUID();
+            console.log('criou id');
+        } else {
+            console.log('já tinha id');
         }
-    
-        const handleClose = () => {
-            sessionStorage.removeItem('userId');
 
-            console.log('Socket Closed');
-        }
+        socketRef.current?.send(JSON.stringify({
+            type: 'connect_user',
+            userId: UUID,
+            name: userName
+        }));
+
+        sessionStorage.setItem('userId', UUID);
+        console.log(UUID);
+
+        console.log('Testing sending message!')
+    }
+
+    function disconnectUser() {
+        let UUID = sessionStorage.getItem('userId');
+
+        socketRef.current?.send(JSON.stringify({
+            type: 'disconnect_user',
+            userId: UUID,
+            name: userName
+        }));
+
+        setIsConnected(false);
+    }
+
 
         const handleMessage = (event: MessageEvent) => {
         }
