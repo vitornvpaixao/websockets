@@ -65,7 +65,20 @@ function App() {
     }, []);
 
     return (
-        <section id="center"></section>
+        <section>
+            <div id="left">
+                <p>Socket Status: {socketStatus ? 'Opened' : 'Closed'}</p>
+                <p>Connection Status: {isConnected ? 'User connected' : 'User disconnected'}</p>
+                <p>User name: {userName || 'Disconnected'}</p>
+    
+                { !isConnected && <input value={userName} type="text" onChange={(e) => setUserName(e.target.value)}/> }
+                { !isConnected && <button onClick={connectUser}>Connect</button> }
+    
+                { isConnected && <button onClick={disconnectUser}>Disconnect</button> }
+            </div>
+    
+            <div></div>
+        </section>
     );
 }
 
