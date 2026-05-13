@@ -7,24 +7,26 @@ const wss = new WebSocketServer({ port: PORT });
 const activeConnections: Connection[] = [];
 const users: User[] = [];
 
-type Connection = {
+interface Connection {
     ws: WebSocket,
     user: User
 }
 
-type User = {
+interface User {
     id: string | number;
-    name?: string;
+    name: string;
     connectAt: Date;
+    isConnected: boolean;
     conversations: Conversation[];
 }
 
-type Conversation = {
+interface Conversation {
     userId: string | number;
     messages: Message[];
 }
 
-type Message = {
+interface Message {
+    type: string; 
     date: Date;
     text: string;
 }
