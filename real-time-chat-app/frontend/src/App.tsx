@@ -38,8 +38,6 @@ function App() {
             userId: UUID,
             name: userName
         }));
-
-        setIsConnected(false);
     }
 
     useEffect(() => {
@@ -62,21 +60,28 @@ function App() {
             }
 
             const handleMessage = (event: MessageEvent) => {
-                const { type, users, status } = JSON.parse(event.data);
+                const { type, users } = JSON.parse(event.data);
 
+                // User receive connection confirmation
+                // TODO - UI updated with data - to be improved
                 if (type === 'connect_user') {
                     setIsConnected(true);
 
                     return;
                 }
 
+                // User receive disconnection confirmation
+                // TODO - UI updated with data - to be improved
                 if (type === 'disconnect_user') {
                     setIsConnected(false);
 
                     return;
                 }
 
+                // User receive available users
+                // TODO - Update user list (state) - show in UI
                 if (type === 'available_users') {
+                    
                     console.log('Available Users: ', users)
                 }
             }
@@ -99,6 +104,7 @@ function App() {
             }
         }
 
+        // TODO: Analyse if socket connection require a name and then instead of disconnet would be a king of status change (offline/online)
         connectSocket();
 
         return () => {
@@ -107,6 +113,7 @@ function App() {
     }, []);
 
     return (
+        // TODO: improve UI - Aim is to have a column with active users and on click open conversation
         <section>
             <div id="left">
                 <p>Socket Status: {socketStatus ? 'Opened' : 'Closed'}</p>
