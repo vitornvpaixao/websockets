@@ -2,7 +2,7 @@ import WebSocket, { WebSocketServer } from 'ws';
 import { config } from '../config';
 import { init, connectUser, disconnectUser } from './services/messageService';
 import { IConnection, IClientMessage } from './types/message.types';
-import { activeConnections } from './db/strore';
+import { activeConnections } from './db/store';
 
 const { PORT, HOST } = config;
 const wss = new WebSocketServer({ port: PORT });
@@ -14,7 +14,7 @@ wss.on('connection', (ws: WebSocket) => {
     
     ws.on('error', console.error);
 
-    // On message we have to control wich client is sending message and for who is to send the message;
+    // On message we have to control which client is sending message and for who is to send the message;
     ws.on('message', (data: Buffer, isBinary: boolean | undefined) => {
         const parsedData: IClientMessage = JSON.parse(data.toString());
 

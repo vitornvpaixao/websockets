@@ -1,7 +1,7 @@
 import WebSocket, { Server, WebSocketServer } from "ws";
 import { User } from "../models/User";
 import { IConnection, IClientMessage } from "../types/message.types";
-import { users, activeConnections } from "../db/strore";
+import { users, activeConnections } from "../db/store";
 
 let _wss: WebSocketServer;
 
@@ -49,7 +49,7 @@ export const connectUser = (ws: WebSocket, data: IClientMessage, isBinary: boole
             .filter(connection => connection.user.id !== wsCli?.user.id)
             .map(us => `${us.user.name} - ${us.user.isConnected ? 'Online' : 'Offline'}`);
         
-        // Send active users for all websockect connections
+        // Send active users for all websocket connections
         if (wsCli && activeUsers.length > 0 && cli.readyState === WebSocket.OPEN) {
             cli.send(JSON.stringify({
                 type: 'available_users',
@@ -60,7 +60,7 @@ export const connectUser = (ws: WebSocket, data: IClientMessage, isBinary: boole
                 if (err) console.error('WS send error: ', err);
             });
             
-            console.log(`[${new Date().toISOString()}][Connect] Sended to ${wsCli?.user.name} users list: ${activeUsers}`);
+            console.log(`[${new Date().toISOString()}][Connect] Sent to ${wsCli?.user.name} users list: ${activeUsers}`);
         }
     })
 
@@ -101,7 +101,7 @@ export const disconnectUser = (ws: WebSocket, data: IClientMessage, isBinary: bo
                 if (err) console.error('WS send error: ', err);
             });
             
-            console.log(`[${new Date().toISOString()}][Disconnect] Sended to ${wsCli?.user.name} users list: ${activeUsers}`);
+            console.log(`[${new Date().toISOString()}][Disconnect] Sent to ${wsCli?.user.name} users list: ${activeUsers}`);
         }
     })
 
