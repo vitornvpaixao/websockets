@@ -12,7 +12,7 @@ export interface IConversation {
 }
 
 export interface IMessage {
-    type: string; 
+    isReceived: boolean;
     date: Date;
     text: string;
 }
