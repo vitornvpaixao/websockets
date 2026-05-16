@@ -1,6 +1,6 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import { config } from '../config';
-import { init, connectUser, disconnectUser } from './services/messageService';
+import { connectUser, disconnectUser, broadcastActiveUsers } from './services/messageService';
 import { IConnection, IClientMessage } from './types/message.types';
 import { activeConnections } from './db/store';
 
@@ -10,7 +10,6 @@ const wss = new WebSocketServer({ port: PORT });
 // Improve the logs for each session
 wss.on('connection', (ws: WebSocket) => {
     console.log(`[${new Date().toISOString()}] New Connection`);
-    init(wss);
     
     ws.on('error', console.error);
 
@@ -23,14 +22,14 @@ wss.on('connection', (ws: WebSocket) => {
             if (parsedData.type === 'connect_user') {
                 console.log('chegou connect')
                 // update DB with new user (active users)
-                connectUser(ws, parsedData, isBinary)
+                connectUser(wss, ws, parsedData, isBinary)
     
                 return;
             }
     
             if (parsedData.type === 'disconnect_user') { 
                 // remove user from DB (active users)
-                disconnectUser(ws, parsedData, isBinary);
+                disconnectUser(wss, ws, parsedData, isBinary);
 
                 return;
             }
@@ -60,6 +59,7 @@ wss.on('connection', (ws: WebSocket) => {
 
      ws.on('close', () => {
         // Remove user from DB (users)
+        // TODO: remove users from registeredUser (every socket open user)
         const userIdx = activeConnections.findIndex((connection: IConnection) => connection.ws === ws);
 
         if (userIdx !== -1) {
@@ -67,6 +67,8 @@ wss.on('connection', (ws: WebSocket) => {
             
             activeConnections.splice(userIdx, 1);
         }
+
+        broadcastActiveUsers(wss, true, false);
 
         console.log(`[${new Date().toISOString()}] Socket Closed`);
         console.log(activeConnections.map(u => u.user))
