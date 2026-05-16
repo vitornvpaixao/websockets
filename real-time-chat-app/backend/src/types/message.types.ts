@@ -7,7 +7,7 @@ export interface IConnection {
 }
 
 export interface IConversation {
-    userId: string | number;
+    userId: string;
     messages: IMessage[];
 }
 
