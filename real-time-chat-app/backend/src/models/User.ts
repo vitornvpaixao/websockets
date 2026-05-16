@@ -15,7 +15,7 @@ export class User {
         this.conversations = [];
     }
 
-    connectUser(isConnected: boolean) {
+    setConnectionStatus(isConnected: boolean) {
         this.isConnected = isConnected;
     }
 
@@ -28,9 +28,9 @@ export class User {
         this.conversations.push(conversation);
     }
 
-    addMessage(userId: string, type: string, text: string) {
+    addMessage(userId: string, isReceived: boolean, text: string) {
         const msg: IMessage = {
-            type,
+            isReceived,
             date: new Date(),
             text
         }

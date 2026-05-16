@@ -27,7 +27,7 @@ export const connectUser = (ws: WebSocket, data: IClientMessage, isBinary: boole
             user
         }
 
-        user.connectUser(true);
+        user.setConnectionStatus(true);
         activeConnections.push(client)
     }
     
@@ -71,13 +71,7 @@ export const connectUser = (ws: WebSocket, data: IClientMessage, isBinary: boole
 export const disconnectUser = (ws: WebSocket, data: IClientMessage, isBinary: boolean | undefined) => {
     const { userId } = data;
     let user: User | undefined = users.find((user) => user.id === userId)
-
-    // Send connection confirmation to client ws
-    ws.send(JSON.stringify({
-        type: 'disconnect_user',
-    }))
-
-    user?.connectUser(false);
+    user?.setConnectionStatus(false);
         
     // Send for each connected user the other user lists
     // TODO - Abstract this to one function, like: sendGeneralMessages
