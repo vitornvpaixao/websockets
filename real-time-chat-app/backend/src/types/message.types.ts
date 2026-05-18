@@ -18,7 +18,7 @@ export interface IMessage {
 }
 
 export interface IClientMessage {
-    type: 'connect_user' | 'disconnect_user' | 'new_message',
-    userId: string,
-    name: string
+    type: 'new_message' | 'connect_user' | 'disconnect_user',
+    userId?: string,
+    name?: string
 }

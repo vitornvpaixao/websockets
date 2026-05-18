@@ -10,7 +10,7 @@ export const connectUser = (wss: WebSocketServer, ws: WebSocket, data: IClientMe
     
     // If no user create one | if exists but keep going
     if (!user) {
-        user = new User(userId, name);
+        user = new User(userId!, name!);
         
         // Historic in future | Users with open socket
         registeredUsers.push(user);
@@ -86,14 +86,15 @@ export const broadcastActiveUsers = (wss: WebSocketServer, isBinary: boolean | u
 
 const broadcastConnectionStatus = (ws: WebSocket, isToConnect: boolean) => {
     const type = isToConnect ? 'Connect' : 'Disconnect';
-    const messageType = isToConnect ? 'connect' : 'disconnect';
     
     if (ws.readyState === WebSocket.OPEN) {
         console.log(`[${new Date().toISOString()}][${type}] Sent confirmation to client`);
+        const msgType: IClientMessage = {
+            type: `${type.toLowerCase()}_user` as 'connect_user' | 'disconnect_user',
+        };
+
         // Send connection confirmation to client
-        ws.send(JSON.stringify({
-            type: `${messageType}_user`,
-        }))
+        ws.send(JSON.stringify(msgType));
     } else {
         console.log(`[${new Date().toISOString()}][${type}] Could not send confirmation - socket is closed`);
     }
