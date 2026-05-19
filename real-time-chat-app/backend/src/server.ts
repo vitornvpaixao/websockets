@@ -1,98 +1,76 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import { config } from '../config';
+import { connectUser, disconnectUser, broadcastActiveUsers } from './services/messageService';
+import { IConnection, IClientMessage } from './types/message.types';
+import { activeConnections } from './db/store';
 
 const { PORT, HOST } = config;
 const wss = new WebSocketServer({ port: PORT });
 
-const activeConnections: Connection[] = [];
-const users: User[] = [];
-
-type Connection = {
-    ws: WebSocket,
-    user: User
-}
-
-type User = {
-    id: string | number;
-    name?: string;
-    connectAt: Date;
-    conversations: Conversation[];
-}
-
-type Conversation = {
-    userId: string | number;
-    messages: Message[];
-}
-
-type Message = {
-    date: Date;
-    text: string;
-}
-
-// improve the logs for each needed section. We must have a way to control users logged, when and who!
+// Improve the logs for each session
 wss.on('connection', (ws: WebSocket) => {
+    console.log(`[${new Date().toISOString()}] New Connection`);
     
     ws.on('error', console.error);
 
-    // On message we have to control wich client is sending message and for who is to send the message;
-    // we will need as well an obj with good structure to know who is sending messages an to who!
-    // we will need a king of DB (we can use initialy and array) and then save and get from Local Storage
-    // we will need different methods to control adding users and create the conversation
-    // incremet conversation messagens, etc
-    ws.on('message', (data: any, isBinary: any) => {
-        const processedData = JSON.parse(data.toString());
-        console.log(`[${new Date().toISOString()}] received: ${processedData}`);
-        console.log(processedData.type)
-        
-        // Here we must update DB with new user
-        // This works as a connection validation
-        if (processedData.type === 'identify') {
-            let user = users.find((user) => user.id === processedData.userId)
+    // On message we have to control which client is sending message and for who is to send the message;
+    ws.on('message', (data: Buffer, isBinary: boolean | undefined) => {
+        try {
+            const parsedData: IClientMessage = JSON.parse(data.toString());
 
-            if (!user) {
-                user = {
-                    id: processedData.userId,
-                    connectAt: new Date(),
-                    conversations: []
-                }
-
-                // Historic in future
-                users.push(user);
+            // This works as a connection validation
+            if (parsedData.type === 'connect_user') {
+                console.log('chegou connect')
+                // update DB with new user (active users)
+                connectUser(wss, ws, parsedData, isBinary)
+    
+                return;
             }
+    
+            if (parsedData.type === 'disconnect_user') { 
+                // remove user from DB (active users)
+                disconnectUser(wss, ws, parsedData, isBinary);
 
-            const client: Connection = {
-                ws,
-                user: user,
+                return;
             }
-            
-            activeConnections.push(client)
-
-            console.log('Active Connections: ', activeConnections);
-
-            return;
-        }
-
-        if (processedData.type === 'message') { 
-            // wss.clients.forEach(cli => {
-            //     if (cli !== ws && cli.readyState === WebSocket.OPEN) {
-            //         cli.send(data, {binary: isBinary}, (err) => {
-            //             if (err) console.error('WS send error: ', err);
-            //             }
-            //         );
-            //     }
-            // })
+    
+            // Create system to receive, save, and send messages to users
+            if (parsedData.type === 'new_message') {
+                // This section will process every received message;
+    
+                // Use case 1 - User A send msg to User B
+                // Find User A and save message sended to user B
+                // Find User B and save message received from user A
+                // Send message to user B
+            }
+        } catch (e) {
+            // Defensive programming — FE controls message format
+            // TODO: PR? - consider sending error to client if user can act on it
+            if (e instanceof SyntaxError) {
+                console.log(`[${new Date().toISOString()}][Error] Malformed message received on closed socket`);
+            } else {
+               console.error(`[${new Date().toISOString()}][Error] Unexpected error:`, e);
+            }
         }
     });
 
-     ws.on('close', () => {
-        console.log('Socket Closed')
-        const userIdx = activeConnections.findIndex((connection: Connection) => connection.ws === ws);
+    ws.on('close', () => {
+        // Remove user from DB (users)
+        // TODO: remove users from registeredUser (every socket open user)
+        const userIdx = activeConnections.findIndex((connection: IConnection) => connection.ws === ws);
 
         if (userIdx !== -1) {
+            console.log(`[${new Date().toISOString()}] User Name-${activeConnections[userIdx].user.id} has disconnected`);
+            
             activeConnections.splice(userIdx, 1);
+        } else {
+            console.warn(`[${new Date().toISOString()}][Disconnect] User not found in activeConnections`);
         }
 
-        console.log(activeConnections)
+        broadcastActiveUsers(wss, true);
+
+        console.log(`[${new Date().toISOString()}] Socket Closed`);
+        console.log(activeConnections.map(u => u.user));
     });
 });
 
