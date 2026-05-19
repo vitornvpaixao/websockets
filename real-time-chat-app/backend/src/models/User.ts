@@ -1,7 +1,7 @@
 import { IConversation, IMessage } from "../types/message.types";
 
 export class User {
-    id: string | number;
+    id: string;
     name: string;
     connectAt: Date;
     isConnected: boolean;
