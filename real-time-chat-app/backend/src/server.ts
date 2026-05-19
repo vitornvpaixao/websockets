@@ -44,20 +44,17 @@ wss.on('connection', (ws: WebSocket) => {
                 // Send message to user B
             }
         } catch (e) {
-            // Since we have FE message control, this could be redundant
-            // In other hand this is kind of defensive programming 
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ 
-                    type: 'error',
-                     message: 'Invalid message format' 
-                }));
-            } else {
+            // Defensive programming — FE controls message format
+            // TODO: PR? - consider sending error to client if user can act on it
+            if (e instanceof SyntaxError) {
                 console.log(`[${new Date().toISOString()}][Error] Malformed message received on closed socket`);
+            } else {
+               console.error(`[${new Date().toISOString()}][Error] Unexpected error:`, e);
             }
         }
     });
 
-     ws.on('close', () => {
+    ws.on('close', () => {
         // Remove user from DB (users)
         // TODO: remove users from registeredUser (every socket open user)
         const userIdx = activeConnections.findIndex((connection: IConnection) => connection.ws === ws);
@@ -66,12 +63,14 @@ wss.on('connection', (ws: WebSocket) => {
             console.log(`[${new Date().toISOString()}] User Name-${activeConnections[userIdx].user.id} has disconnected`);
             
             activeConnections.splice(userIdx, 1);
+        } else {
+            console.warn(`[${new Date().toISOString()}][Disconnect] User not found in activeConnections`);
         }
 
         broadcastActiveUsers(wss, true, false);
 
         console.log(`[${new Date().toISOString()}] Socket Closed`);
-        console.log(activeConnections.map(u => u.user))
+        console.log(activeConnections.map(u => u.user));
     });
 });
 
