@@ -67,7 +67,7 @@ wss.on('connection', (ws: WebSocket) => {
             console.warn(`[${new Date().toISOString()}][Disconnect] User not found in activeConnections`);
         }
 
-        broadcastActiveUsers(wss, true, false);
+        broadcastActiveUsers(wss, true);
 
         console.log(`[${new Date().toISOString()}] Socket Closed`);
         console.log(activeConnections.map(u => u.user));
