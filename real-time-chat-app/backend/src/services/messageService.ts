@@ -1,6 +1,6 @@
 import WebSocket, { Server, WebSocketServer } from "ws";
 import { User } from "../models/User";
-import { IConnection, IClientMessage } from "../types/message.types";
+import { IConnection, IClientMessage, IActiveUsersMessage, IServerMessage } from "../types/message.types";
 import { registeredUsers, activeConnections } from "../db/store";
 
 // TODO: Improve logs and some code (DRY)
@@ -53,6 +53,8 @@ export const disconnectUser = (wss: WebSocketServer, ws: WebSocket, data: IClien
     if (userIdx !== -1) {
         activeConnections.splice(userIdx, 1);
         console.log(`[${new Date().toISOString()}][Disconnect] User ${user?.name} is disconnected/offline`);
+    } else {
+        console.warn(`[${new Date().toISOString()}][Disconnect] User not found in activeConnections`);
     }
 
     console.log('[Disconnect] Active Connections: ', activeConnections.map(user => user.user));
@@ -70,10 +72,12 @@ export const broadcastActiveUsers = (wss: WebSocketServer, isBinary: boolean | u
         
         // Send active users for all websockect connections
         if (cli.readyState === WebSocket.OPEN) {
-            cli.send(JSON.stringify({
+            const msgType: IActiveUsersMessage = {
                 type: 'available_users',
                 users: activeUsers
-            }), 
+            }
+
+            cli.send(JSON.stringify(msgType), 
             {binary: isBinary}, 
             (err) => {
                 if (err) console.error('WS send error: ', err);
@@ -89,7 +93,7 @@ const broadcastConnectionStatus = (ws: WebSocket, isToConnect: boolean) => {
     
     if (ws.readyState === WebSocket.OPEN) {
         console.log(`[${new Date().toISOString()}][${type}] Sent confirmation to client`);
-        const msgType: IClientMessage = {
+        const msgType: IServerMessage = {
             type: `${type.toLowerCase()}_user` as 'connect_user' | 'disconnect_user',
         };
 
