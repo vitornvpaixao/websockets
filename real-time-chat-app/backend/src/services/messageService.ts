@@ -30,10 +30,10 @@ export const connectUser = (wss: WebSocketServer, ws: WebSocket, data: IClientMe
     console.log(`[${new Date().toISOString()}]  - User Id: ${user.id}`);
     console.log(`[${new Date().toISOString()}]  - User Name: ${user.name}`);
 
-    broadcastConnectionStatus(ws, true);
+    notifyConnectionStatus(ws, true);
 
     // Send for each connected user the other user lists
-    broadcastActiveUsers(wss, isBinary, true);
+    broadcastActiveUsers(wss, isBinary);
 
     console.log('[Connect] Active Connections: ', activeConnections.map(user => user.user));
     console.log('[Connect] Registered users: ', registeredUsers);
@@ -44,10 +44,10 @@ export const disconnectUser = (wss: WebSocketServer, ws: WebSocket, data: IClien
     let user: User | undefined = registeredUsers.find((user) => user.id === userId)
 
     user?.setConnectionStatus(false);
-    broadcastConnectionStatus(ws, false);
+    notifyConnectionStatus(ws, false);
 
     // Send for each connected user the other users list
-    broadcastActiveUsers(wss, isBinary, false);
+    broadcastActiveUsers(wss, isBinary);
 
     const userIdx = activeConnections.findIndex((connection: IConnection) => connection.ws === ws);
     if (userIdx !== -1) {
@@ -61,17 +61,21 @@ export const disconnectUser = (wss: WebSocketServer, ws: WebSocket, data: IClien
     console.log('[Disconnect] Registered users: ', registeredUsers);
 }
 
-export const broadcastActiveUsers = (wss: WebSocketServer, isBinary: boolean | undefined, isToConnect: boolean) => {
+export const broadcastActiveUsers = (wss: WebSocketServer, isBinary: boolean | undefined) => {
     wss.clients.forEach(cli => {
-        // Send active users to clients - except himself
+        // Send active users to clients
         // Existing users and their online and offline status
+        // TODO PR3 - broadcast using registeredUsers to include offline users
         const wsCli = activeConnections.find((connection: IConnection) => connection.ws === cli)
+        if (!wsCli) return;
+
         const activeUsers = activeConnections
             .filter(connection => connection.user.id !== wsCli?.user.id)
             .map(us => `${us.user.name} - ${us.user.isConnected ? 'Online' : 'Offline'}`);
-        
+            
         // Send active users for all websockect connections
         if (cli.readyState === WebSocket.OPEN) {
+            const userName = wsCli.user.name;
             const msgType: IActiveUsersMessage = {
                 type: 'available_users',
                 users: activeUsers
@@ -83,12 +87,15 @@ export const broadcastActiveUsers = (wss: WebSocketServer, isBinary: boolean | u
                 if (err) console.error('WS send error: ', err);
             });
             
-            console.log(`[${new Date().toISOString()}][${isToConnect ? 'Connect' : 'Disconnect'}] Sent to ${wsCli?.user.name} users list: ${activeUsers}`);
+            console.log(`[${new Date().toISOString()}][Broadcast Users] Sent to ${userName} - List: ${activeUsers}`);
+        } else {
+            // TODO PR3 - use name because it will be always available
+            console.warn(`[${new Date().toISOString()}][Broadcast Users] Skipped client - Socket is closed`);
         }
     })
 }
 
-const broadcastConnectionStatus = (ws: WebSocket, isToConnect: boolean) => {
+const notifyConnectionStatus = (ws: WebSocket, isToConnect: boolean) => {
     const type = isToConnect ? 'Connect' : 'Disconnect';
     
     if (ws.readyState === WebSocket.OPEN) {
@@ -100,6 +107,6 @@ const broadcastConnectionStatus = (ws: WebSocket, isToConnect: boolean) => {
         // Send connection confirmation to client
         ws.send(JSON.stringify(msgType));
     } else {
-        console.log(`[${new Date().toISOString()}][${type}] Could not send confirmation - socket is closed`);
+        console.log(`[${new Date().toISOString()}][${type}] Could not send confirmation - Socket is closed`);
     }
 }
